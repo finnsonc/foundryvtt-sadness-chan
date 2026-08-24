@@ -38,8 +38,8 @@ export default defineConfig({
         { src: "module.json", dest: "." },
         { src: "README.md", dest: "." },
         { src: "assets", dest: "." },
-        { src: "src/languages", dest: "." },
-        { src: "src/templates", dest: "." }
+        { src: "languages", dest: "." },
+        { src: "templates", dest: "." }
       ]
     })
   ]

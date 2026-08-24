@@ -4,12 +4,32 @@ import { vi } from "vitest";
 const settingsStore = new Map();
 const settingsDefs = new Map();
 
-const usersArray = [
-  { id: "user-1", _id: "user-1", name: "TestUser", active: true, role: 4, isGM: true },
-  { id: "user-2", _id: "user-2", name: "PlayerTwo", active: true, role: 1, isGM: false }
+export function createMockUser(data) {
+  const flags = {};
+  return {
+    ...data,
+    flags,
+    getFlag: vi.fn((scope, key) => flags[scope]?.[key]),
+    setFlag: vi.fn((scope, key, val) => {
+      if (!flags[scope]) flags[scope] = {};
+      flags[scope][key] = val;
+      return Promise.resolve(val);
+    }),
+    unsetFlag: vi.fn((scope, key) => {
+      if (flags[scope]) delete flags[scope][key];
+      return Promise.resolve();
+    })
+  };
+}
+
+export const usersArray = [
+  createMockUser({ id: "user-1", _id: "user-1", name: "TestUser", active: true, role: 4, isGM: true }),
+  createMockUser({ id: "user-2", _id: "user-2", name: "PlayerTwo", active: true, role: 1, isGM: false })
 ];
 
 usersArray.get = (id) => usersArray.find((u) => u.id === id || u._id === id);
+usersArray.find = Array.prototype.find.bind(usersArray);
+usersArray.filter = Array.prototype.filter.bind(usersArray);
 usersArray.activeGM = usersArray[0];
 
 export const mockGame = {
@@ -58,16 +78,14 @@ export const mockHooks = {
 
 export class MockChatMessage {
   static created = [];
-  static async create(data, options = {}) {
-    const msg = { ...data, options, id: `msg-${Math.random().toString(36).slice(2, 7)}` };
-    MockChatMessage.created.push(msg);
-    return msg;
+
+  static create(data) {
+    MockChatMessage.created.push(data);
+    return Promise.resolve(data);
   }
-  static getSpeaker(data = {}) {
-    return { alias: data.alias || "Sadness Chan" };
-  }
-  static clear() {
-    MockChatMessage.created = [];
+
+  static getSpeaker(obj) {
+    return obj;
   }
 }
 
@@ -75,43 +93,58 @@ export class MockApplicationV2 {
   constructor(options = {}) {
     this.options = options;
   }
-  render() {}
-  close() {}
+  render() {
+    return this;
+  }
+  close() {
+    return Promise.resolve();
+  }
 }
 
-export const MockHandlebarsApplicationMixin = (BaseClass) => {
-  return class extends BaseClass {};
-};
-
-export const mockFoundry = {
-  utils: {
-    deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
-    mergeObject: (target, source) => Object.assign(target, source)
-  },
-  applications: {
-    api: {
-      ApplicationV2: MockApplicationV2,
-      HandlebarsApplicationMixin: MockHandlebarsApplicationMixin
+export const MockHandlebarsApplicationMixin = (Base) => {
+  return class extends Base {
+    _prepareContext() {
+      return {};
     }
-  }
+  };
 };
 
-export const mockUi = {
-  notifications: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn()
-  }
-};
-
-// Set globals on NodeJS global scope
-globalThis.game = mockGame;
-globalThis.Hooks = mockHooks;
-globalThis.ChatMessage = MockChatMessage;
-globalThis.foundry = mockFoundry;
-globalThis.ui = mockUi;
+export function setupFoundryGlobals() {
+  global.game = mockGame;
+  global.Hooks = mockHooks;
+  global.ChatMessage = MockChatMessage;
+  global.ui = {
+    notifications: {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
+    }
+  };
+  global.foundry = {
+    applications: {
+      api: {
+        ApplicationV2: MockApplicationV2,
+        HandlebarsApplicationMixin: MockHandlebarsApplicationMixin
+      }
+    },
+    utils: {
+      deepClone: (obj) => JSON.parse(JSON.stringify(obj))
+    }
+  };
+}
 
 export function resetMockStorage() {
   settingsStore.clear();
-  MockChatMessage.clear();
+  MockChatMessage.created = [];
+  mockHooks._hooks.clear();
+  for (const u of usersArray) {
+    for (const k in u.flags) {
+      delete u.flags[k];
+    }
+  }
+  mockGame.user = usersArray[0];
+  mockGame.users.activeGM = usersArray[0];
 }
+
+// Automatically setup globals on import
+setupFoundryGlobals();

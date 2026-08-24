@@ -1,4 +1,5 @@
 import SettingsManager from "../services/SettingsManager.js";
+import RollTracker from "../services/RollTracker.js";
 import SadnessChan from "../services/SadnessChan.js";
 import { SETTING_KEYS, DEFAULT_SETTINGS } from "../constants.js";
 import { ERROR_MESSAGES } from "../lists/defaultSettings.js";
@@ -135,13 +136,19 @@ export async function handleSadnessCommand(args, user) {
 }
 
 async function sendUserStats(userId, user) {
-  const counter = SettingsManager.getCounter();
   const targetId = userId || game.user?.id;
-  const userData = counter[targetId];
+  const targetUser = user || game.users?.get(targetId) || game.user;
+  const rolls = RollTracker.getUserRolls(targetUser || targetId);
 
-  if (!userData || !userData.rolls || userData.rolls.every((v) => !v)) {
+  if (!rolls || rolls.length <= 1 || rolls.every((v) => !v)) {
     return sendChatMessage(ERROR_MESSAGES.NO_DATA, targetId);
   }
+
+  const userData = {
+    id: targetId,
+    name: targetUser?.name || "Player",
+    rolls
+  };
 
   const isPublic = Boolean(SettingsManager.getSetting(SETTING_KEYS.STATS_MESSAGE_VISIBILITY));
   const html = SadnessChan.buildStatsHTML(userData, true);
@@ -160,7 +167,6 @@ async function sendUserStats(userId, user) {
 }
 
 async function sendAllUsersStats(userId) {
-  const counter = SettingsManager.getCounter();
   const activeUsers = game.users ? game.users.filter((u) => u.active) : [];
   const targetId = userId || game.user?.id;
 
@@ -168,9 +174,13 @@ async function sendAllUsersStats(userId) {
   let count = 0;
 
   for (const u of activeUsers) {
-    const uId = u.id || u._id;
-    const userData = counter[uId];
-    if (userData && userData.rolls) {
+    const rolls = RollTracker.getUserRolls(u);
+    if (rolls && rolls.some((v) => v > 0)) {
+      const userData = {
+        id: u.id || u._id,
+        name: u.name,
+        rolls
+      };
       combinedHTML += SadnessChan.buildStatsHTML(userData, count === 0);
       count++;
     }

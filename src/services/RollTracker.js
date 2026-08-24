@@ -1,5 +1,5 @@
 import SettingsManager from "./SettingsManager.js";
-import { SETTING_KEYS } from "../constants.js";
+import { MODULE_ID, SETTING_KEYS } from "../constants.js";
 
 export class RollTracker {
   static _instance = null;
@@ -62,6 +62,27 @@ export class RollTracker {
     return new Array(length).fill(0);
   }
 
+  getUserRolls(userOrId) {
+    let user = userOrId;
+    if (typeof userOrId === "string") {
+      user = game.users?.get(userOrId) || (game.user?.id === userOrId ? game.user : null);
+    }
+    const dieType = this.getDieType();
+    if (!user) return this.createZeroArray(dieType + 1);
+
+    const flagRolls = user.getFlag ? user.getFlag(MODULE_ID, "rolls") : user.flags?.[MODULE_ID]?.rolls;
+    if (Array.isArray(flagRolls) && flagRolls.length > 0) {
+      return flagRolls;
+    }
+
+    const legacy = SettingsManager.getCounter()[user.id || user._id]?.rolls;
+    if (Array.isArray(legacy) && legacy.length > 0) {
+      return legacy;
+    }
+
+    return this.createZeroArray(dieType + 1);
+  }
+
   extractDiceRolls(rolls, dieType = this.getDieType()) {
     if (!rolls) return null;
     const rollList = Array.isArray(rolls) ? rolls : [rolls];
@@ -97,34 +118,45 @@ export class RollTracker {
   async recordUserRolls(userId, userName, recentRolls) {
     if (!userId || !Array.isArray(recentRolls)) return;
     const dieType = this.getDieType();
-    const counter = SettingsManager.getCounter();
+    const user = game.users?.get(userId) || (game.user?.id === userId ? game.user : null);
+    const existing = this.getUserRolls(user || userId);
+    const updatedRolls = [...existing];
 
-    if (!counter[userId] || !Array.isArray(counter[userId].rolls)) {
-      const initialRolls = this.createZeroArray(dieType + 1);
-      for (let i = 1; i <= dieType; i++) {
-        initialRolls[i] = recentRolls[i] || 0;
-      }
-      counter[userId] = {
-        id: userId,
-        name: userName || "Unknown User",
-        rolls: initialRolls
-      };
-    } else {
-      const stored = counter[userId];
-      stored.name = userName || stored.name;
+    while (updatedRolls.length <= dieType) {
+      updatedRolls.push(0);
+    }
 
-      // Ensure storage array is sized to current dieType
-      while (stored.rolls.length <= dieType) {
-        stored.rolls.push(0);
-      }
+    for (let i = 1; i <= dieType; i++) {
+      updatedRolls[i] = (updatedRolls[i] || 0) + (recentRolls[i] || 0);
+    }
 
-      for (let i = 1; i <= dieType; i++) {
-        stored.rolls[i] = (stored.rolls[i] || 0) + (recentRolls[i] || 0);
+    const userData = {
+      id: userId,
+      name: userName || user?.name || "Player",
+      rolls: updatedRolls
+    };
+
+    // 1. Always persist to User document flags (players always have write permission to their own flags!)
+    if (user && typeof user.setFlag === "function") {
+      try {
+        await user.setFlag(MODULE_ID, "rolls", updatedRolls);
+      } catch (err) {
+        console.warn("sadness-chan | Could not save user flag:", err);
       }
     }
 
-    await SettingsManager.setCounter(counter);
-    return counter[userId];
+    // 2. If user is GM, also sync to world counter setting
+    if (game.user?.isGM) {
+      try {
+        const counter = SettingsManager.getCounter();
+        counter[userId] = userData;
+        await SettingsManager.setCounter(counter);
+      } catch (err) {
+        console.warn("sadness-chan | Could not sync world counter setting:", err);
+      }
+    }
+
+    return userData;
   }
 }
 

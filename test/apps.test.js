@@ -46,7 +46,7 @@ describe("Application Forms", () => {
       const app = new ImportExport();
       const context = await app._prepareContext();
       expect(context.counterJson).toContain('"user-1"');
-      expect(context.counterJson).toContain('"Tester"');
+      expect(context.counterJson).toContain('"TestUser"');
     });
   });
 });

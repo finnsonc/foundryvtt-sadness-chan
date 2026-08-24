@@ -83,23 +83,65 @@ export class SettingsManager {
   }
 
   async setSetting(key, value) {
-    return game.settings.set(MODULE_ID, key, value);
+    if (!game.user?.isGM) {
+      // Non-GM users cannot write to world settings in the server database
+      return;
+    }
+    try {
+      return await game.settings.set(MODULE_ID, key, value);
+    } catch (err) {
+      console.warn(`sadness-chan | Unable to persist setting ${key}:`, err);
+    }
   }
 
   getCounter() {
-    const raw = this.getSetting(SETTING_KEYS.COUNTER);
-    if (!raw) return {};
-    if (typeof raw === "string") {
-      try {
-        return JSON.parse(raw);
-      } catch {
-        return {};
+    const result = {};
+
+    // 1. Read from User document flags (accessible by all users)
+    if (game.users) {
+      for (const u of game.users) {
+        const uId = u.id || u._id;
+        const rolls = u.getFlag ? u.getFlag(MODULE_ID, "rolls") : u.flags?.[MODULE_ID]?.rolls;
+        if (Array.isArray(rolls) && rolls.length > 0) {
+          result[uId] = {
+            id: uId,
+            name: u.name,
+            rolls: foundry.utils.deepClone ? foundry.utils.deepClone(rolls) : JSON.parse(JSON.stringify(rolls))
+          };
+        }
       }
     }
-    return foundry.utils.deepClone ? foundry.utils.deepClone(raw) : JSON.parse(JSON.stringify(raw));
+
+    // 2. Merge with legacy world setting store
+    const raw = this.getSetting(SETTING_KEYS.COUNTER);
+    if (raw) {
+      let legacy = raw;
+      if (typeof raw === "string") {
+        try {
+          legacy = JSON.parse(raw);
+        } catch {
+          legacy = {};
+        }
+      }
+      for (const [id, data] of Object.entries(legacy)) {
+        if (!result[id] && data && Array.isArray(data.rolls)) {
+          result[id] = foundry.utils.deepClone ? foundry.utils.deepClone(data) : JSON.parse(JSON.stringify(data));
+        }
+      }
+    }
+
+    return result;
   }
 
   async setCounter(counterData) {
+    if (counterData && typeof counterData === "object") {
+      for (const [uId, data] of Object.entries(counterData)) {
+        const user = game.users?.get(uId);
+        if (user && Array.isArray(data?.rolls) && typeof user.setFlag === "function") {
+          await user.setFlag(MODULE_ID, "rolls", data.rolls);
+        }
+      }
+    }
     return this.setSetting(SETTING_KEYS.COUNTER, counterData || {});
   }
 
@@ -132,14 +174,27 @@ export class SettingsManager {
   }
 
   async resetCounter() {
+    if (game.users) {
+      for (const u of game.users) {
+        if (typeof u.unsetFlag === "function") {
+          await u.unsetFlag(MODULE_ID, "rolls");
+        }
+      }
+    }
     return this.setCounter({});
   }
 
   async resetUserCounter(userId) {
-    const counter = this.getCounter();
-    if (counter[userId]?.rolls) {
-      counter[userId].rolls.fill(0);
-      await this.setCounter(counter);
+    const user = game.users?.get(userId) || (game.user?.id === userId ? game.user : null);
+    if (user && typeof user.unsetFlag === "function") {
+      await user.unsetFlag(MODULE_ID, "rolls");
+    }
+    if (game.user?.isGM) {
+      const counter = this.getCounter();
+      if (counter[userId]?.rolls) {
+        counter[userId].rolls.fill(0);
+        await this.setCounter(counter);
+      }
     }
   }
 
