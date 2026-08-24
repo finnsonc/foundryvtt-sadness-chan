@@ -13,11 +13,11 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: path.resolve(__dirname, `dist/${MODULE_ID}`),
+    outDir: path.resolve(import.meta.dirname, `dist/${MODULE_ID}`),
     emptyOutDir: true,
     sourcemap: true,
     lib: {
-      entry: path.resolve(__dirname, "src/module.js"),
+      entry: path.resolve(import.meta.dirname, "src/module.js"),
       formats: ["es"],
       fileName: () => "module.js"
     },
