@@ -24,6 +24,7 @@ export function onChatMessage(chatLog, messageText, chatData) {
  * and return false to prevent the raw text from being saved as a chat message.
  */
 export function onPreCreateChatMessage(document, data, options, userId) {
+  if (userId && userId !== game.user?.id) return true;
   const content = (data?.content || document?.content || "").trim();
   if (!content) return true;
 
