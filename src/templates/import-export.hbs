@@ -1,0 +1,16 @@
+<div class="{{moduleName}}-app">
+  <div class="form-group">
+    <label for="counter-json">{{localize "SADNESS_CHAN.ImportExport.HistoryJson"}}</label>
+    <p class="notes">{{localize "SADNESS_CHAN.ImportExport.HistoryJsonHint"}}</p>
+    <textarea id="counter-json" name="counter" rows="12">{{counterJson}}</textarea>
+  </div>
+
+  <footer class="sheet-footer">
+    <button type="button" data-action="copy">
+      <i class="fas fa-copy"></i> {{localize "SADNESS_CHAN.ImportExport.CopyToClipboard"}}
+    </button>
+    <button type="button" data-action="import" class="primary">
+      <i class="fas fa-file-import"></i> {{localize "SADNESS_CHAN.ImportExport.Import"}}
+    </button>
+  </footer>
+</div>

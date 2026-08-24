@@ -1,0 +1,31 @@
+<div class="{{moduleName}}-app">
+  <div class="form-group">
+    <label for="fail-comments">{{localize "SADNESS_CHAN.ListsEditor.CritFailMessages"}}</label>
+    <p class="notes">{{localize "SADNESS_CHAN.ListsEditor.CritFailMessagesHint"}}</p>
+    <textarea id="fail-comments" name="fail" rows="6">{{lists.fail}}</textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="success-comments">{{localize "SADNESS_CHAN.ListsEditor.CritSuccessMessages"}}</label>
+    <p class="notes">{{localize "SADNESS_CHAN.ListsEditor.CritSuccessMessagesHint"}}</p>
+    <textarea id="success-comments" name="success" rows="6">{{lists.success}}</textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="fail-portraits">{{localize "SADNESS_CHAN.ListsEditor.FailPortraits"}}</label>
+    <p class="notes">{{localize "SADNESS_CHAN.ListsEditor.PortraitsHint"}}</p>
+    <textarea id="fail-portraits" name="fail_portraits" rows="4">{{lists.fail_portraits}}</textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="success-portraits">{{localize "SADNESS_CHAN.ListsEditor.SuccessPortraits"}}</label>
+    <p class="notes">{{localize "SADNESS_CHAN.ListsEditor.PortraitsHint"}}</p>
+    <textarea id="success-portraits" name="portraits" rows="4">{{lists.portraits}}</textarea>
+  </div>
+
+  <footer class="sheet-footer">
+    <button type="submit" name="submit" class="primary">
+      <i class="fas fa-save"></i> {{localize "SADNESS_CHAN.Common.Save"}}
+    </button>
+  </footer>
+</div>

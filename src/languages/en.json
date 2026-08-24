@@ -1,1 +1,107 @@
-{}
+{
+  "SADNESS_CHAN": {
+    "Common": {
+      "Save": "Save Lists",
+      "Cancel": "Cancel"
+    },
+    "Menu": {
+      "ListsEditor": {
+        "Name": "Lists Editor",
+        "Label": "Open List Editor",
+        "Hint": "Customize messages and reaction portrait images for Sadness Chan.",
+        "Title": "Sadness Chan - Lists Editor"
+      },
+      "ImportExport": {
+        "Name": "Import/Export Roll History",
+        "Label": "Open History Editor",
+        "Hint": "View, copy, or restore the world dice roll history.",
+        "Title": "Sadness Chan - Roll History Import / Export"
+      }
+    },
+    "Settings": {
+      "StatsCmd": {
+        "Name": "Stats Command",
+        "Hint": "Root chat command used to trigger Sadness Chan (e.g. !sadness)."
+      },
+      "DieType": {
+        "Name": "Observed Die Faces",
+        "Hint": "The die type to observe for rolls and critical results (e.g. 20 for d20)."
+      },
+      "CrtFail": {
+        "Name": "Critical Fail Value",
+        "Hint": "Die result value considered a critical failure (default: 1)."
+      },
+      "CrtSuccess": {
+        "Name": "Critical Success Value",
+        "Hint": "Die result value considered a critical success (default: 20)."
+      },
+      "FailChance": {
+        "Name": "Critical Fail Whisper Chance",
+        "Hint": "Probability (0 to 1) that Sadness Chan comments on a critical fail."
+      },
+      "SuccessChance": {
+        "Name": "Critical Success Whisper Chance",
+        "Hint": "Probability (0 to 1) that Sadness Chan comments on a critical success."
+      },
+      "Title": {
+        "Name": "Sadness Chan Name",
+        "Hint": "Display name shown in chat headers."
+      },
+      "PublicStats": {
+        "Name": "Public Stats Messages",
+        "Hint": "If enabled, stats commands are posted publicly instead of whispered to the caller."
+      },
+      "PublicComments": {
+        "Name": "Public Reaction Comments",
+        "Hint": "If enabled, critical reaction comments are posted publicly instead of whispered."
+      },
+      "ShowAverage": {
+        "Name": "Show Average Roll",
+        "Hint": "Display average roll in stats cards."
+      },
+      "Plotting": {
+        "Name": "Show Roll Histogram",
+        "Hint": "Display graphical histogram plot in stats cards."
+      },
+      "ImageBorder": {
+        "Name": "Show Portrait Border",
+        "Hint": "Render border styling around portrait avatars."
+      },
+      "ResetLevel": {
+        "Name": "Reset Permissions",
+        "Hint": "Minimum user role required to reset their own roll history."
+      },
+      "Debug": {
+        "Name": "Enable Debugging",
+        "Hint": "Print diagnostic information to the console."
+      }
+    },
+    "Roles": {
+      "Plebs": "Players",
+      "TrustedPlebs": "Trusted Players",
+      "BigManJr": "Assistant GMs",
+      "BigMan": "Game Masters"
+    },
+    "ListsEditor": {
+      "CritFailMessages": "Critical Fail Messages (one per line):",
+      "CritFailMessagesHint": "Supports [sc-name], [sc-avg], [sc-d1], [sc-d20], etc.",
+      "CritSuccessMessages": "Critical Success Messages (one per line):",
+      "CritSuccessMessagesHint": "Supports [sc-name], [sc-avg], [sc-d1], [sc-d20], etc.",
+      "FailPortraits": "Fail Portrait Filepaths or URLs (one per line):",
+      "SuccessPortraits": "Success Portrait Filepaths or URLs (one per line):",
+      "PortraitsHint": "Enter local asset paths or image URLs."
+    },
+    "ImportExport": {
+      "HistoryJson": "Roll History (JSON)",
+      "HistoryJsonHint": "You can copy this data or paste new JSON to import roll counts.",
+      "CopyToClipboard": "Copy to Clipboard",
+      "Import": "Import History"
+    },
+    "Notifications": {
+      "ListsSaved": "Sadness Chan lists updated successfully!",
+      "CopySuccess": "Roll history copied to clipboard!",
+      "ImportSuccess": "Roll history imported successfully!",
+      "InvalidJson": "Invalid JSON format! Import cancelled."
+    }
+  }
+}
