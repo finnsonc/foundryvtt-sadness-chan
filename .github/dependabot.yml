@@ -11,9 +11,6 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(deps)"
-    labels:
-      - "dependencies"
-      - "javascript"
 
   # Maintain GitHub Actions workflow dependencies
   - package-ecosystem: "github-actions"
@@ -26,6 +23,3 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(ci)"
-    labels:
-      - "dependencies"
-      - "ci"
